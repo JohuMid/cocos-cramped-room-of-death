@@ -1,7 +1,10 @@
 import { _decorator, Component, Layers, Node, resources, Sprite, SpriteFrame, UITransform } from 'cc';
 const { ccclass, property } = _decorator;
 
-import levels from '../../Levels';
+import { TileManager } from './TileManager';
+import { createUINode, randomByRange } from '../Utils';
+import DataManager from '../../Runtime/DataManager';
+import ResourceManager from '../../Runtime/ResourceManager';
 
 export const TILE_WIDTH = 55
 export const TILE_HEIGHT = 55
@@ -9,9 +12,9 @@ export const TILE_HEIGHT = 55
 @ccclass('TileMapManager')
 export class TileMapManager extends Component {
     async init() {
-        const {mapInfo} = levels[`level${1}`]
+        const spriteFrames = await ResourceManager.Instance.loadDir("texture/tile/tile")
 
-        const spriteFrames = await this.loadRes()
+        const {mapInfo, mapRowCount, mapColumCount} = DataManager.Instance
 
         for (let i = 0; i < mapInfo.length; i++) {
           const column = mapInfo[i];
@@ -20,17 +23,21 @@ export class TileMapManager extends Component {
             if (item.src === null || item.type === null) {
               continue
             }
-            const node = new Node()
-            const sprite = node.addComponent(Sprite)
-            const imgSrc = `tile (${item.src})`
 
-            sprite.spriteFrame = spriteFrames.find(v=>v.name === imgSrc) || spriteFrames[0]
+            let number = item.src
 
-            const transform = node.addComponent(UITransform)
-            transform.setContentSize(TILE_WIDTH,TILE_HEIGHT)
+            if ((number === 1 || number === 5 || number === 9) && i%2 === 0 && j%2 === 0) {
+              number += randomByRange(0,4)
+            }
 
-            node.layer = 1 << Layers.nameToLayer("UI_2D")
-            node.setPosition(i * TILE_WIDTH, -j * TILE_HEIGHT)
+            const node = createUINode()
+            const imgSrc = `tile (${number})`
+
+            const spriteFrame = spriteFrames.find(v=>v.name === imgSrc) || spriteFrames[0]
+
+            const tileManager = node.addComponent(TileManager)
+
+            tileManager.init(spriteFrame, i, j)
 
             node.setParent(this.node)
           }
@@ -44,7 +51,6 @@ export class TileMapManager extends Component {
             reject(err)
             return
           }
-
           resolve(assets)
         });
       })
