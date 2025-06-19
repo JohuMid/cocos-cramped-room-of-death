@@ -7,6 +7,13 @@ export default class DataManager extends Singleton {
     return super.getInstance<DataManager>()
   }
   mapInfo:Array<Array<ITile>>
-  mapRowCount:number
-  mapColumCount:number
+  mapRowCount:number = 0
+  mapColumCount:number = 0
+  levelIndex:number = 1
+
+  reset(){
+    this.mapInfo = []
+    this.mapRowCount = 0
+    this.mapColumCount = 0
+  }
 }

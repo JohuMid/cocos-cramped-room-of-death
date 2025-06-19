@@ -4,15 +4,23 @@ import { createUINode } from '../Utils';
 import levels, { ILevel } from '../../Levels';
 import DataManager from '../../Runtime/DataManager';
 import { TILE_HEIGHT, TILE_WIDTH } from '../Tile/TileManager';
+import EventManager from '../../Runtime/EventManager';
+import { EVENT_ENUM } from '../../Enums';
 const { ccclass, property } = _decorator;
 
 @ccclass('BattleManager')
 export class BattleManager extends Component {
     level:ILevel
     stage:Node
+    protected onLoad(): void {
+        EventManager.Instance.on(EVENT_ENUM.NEXT_LEVEL, this.nextLevel, this)
+    }
+
+    protected onDestroy(): void {
+        EventManager.Instance.off(EVENT_ENUM.NEXT_LEVEL, this.nextLevel)
+    }
 
     generateTileMap() {
-        this.generateStage()
         this.stage.setParent(this.node)
         const tileMap = new Node()
         tileMap.setParent(this.stage)
@@ -36,12 +44,14 @@ export class BattleManager extends Component {
     }
 
     start() {
+        this.generateStage()
         this.initLevel()
     }
 
     initLevel(){
-        const level = levels[`level${1}`]
+        const level = levels[`level${DataManager.Instance.levelIndex}`]
         if (level) {
+            this.clearLevel()
             this.level = level
 
             DataManager.Instance.mapInfo = level.mapInfo
@@ -50,6 +60,16 @@ export class BattleManager extends Component {
 
             this.generateTileMap()
         }
+    }
+
+    nextLevel(){
+        DataManager.Instance.levelIndex++
+        this.initLevel()
+    }
+
+    clearLevel(){
+        this.stage.destroyAllChildren()
+        DataManager.Instance.reset()
     }
 
     update(deltaTime: number) {
