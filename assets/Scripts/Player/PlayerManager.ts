@@ -1,12 +1,13 @@
 import { _decorator, Component, Sprite, UITransform, Animation, animation, AnimationClip, Vec3, SpriteFrame } from "cc";
 import { TILE_HEIGHT, TILE_WIDTH } from "../Tile/TileManager";
 import ResourceManager from "../../Runtime/ResourceManager";
-import { CONTROLLER_ENUM, EVENT_ENUM } from "../../Enums";
+import { CONTROLLER_ENUM, EVENT_ENUM, PARAMS_NAME_ENUM } from "../../Enums";
 import EventManager from "../../Runtime/EventManager";
+import { PlayerStateMachine } from "./PlayerStateMachine";
 
 const { ccclass, property } = _decorator;
 
-const ANIMATION_SPEED = 1/8
+
 
 @ccclass('PlayerManager')
 export class PlayerManager extends Component {
@@ -16,9 +17,18 @@ export class PlayerManager extends Component {
   targetY:number = 0
 
   private readonly speed = 1/10
+  fsm:PlayerStateMachine
 
   async init() {
-    this.render()
+    const sprite = this.addComponent(Sprite)
+    sprite.sizeMode = Sprite.SizeMode.CUSTOM
+
+    const transForm = this.getComponent(UITransform)
+    transForm.setContentSize(TILE_WIDTH * 4,TILE_HEIGHT * 4)
+
+    this.fsm = this.addComponent(PlayerStateMachine)
+    await this.fsm.init()
+    this.fsm.setParams(PARAMS_NAME_ENUM.IDLE,true)
 
     EventManager.Instance.on(EVENT_ENUM.PLAYER_CTRL, this.move, this)
   }
@@ -52,12 +62,12 @@ export class PlayerManager extends Component {
       this.targetY += 1
     } else if (inputDirection === CONTROLLER_ENUM.LEFT) {
       this.targetX -= 1
-    } else if (inputDirection === CONTROLLER_ENUM.RIGHT) {
-      this.targetX += 1
+    } else if (inputDirection === CONTROLLER_ENUM.TURNLEFT) {
+      this.fsm.setParams(PARAMS_NAME_ENUM.TURNLEFT,true)
     }
   }
 
-  async render(){
+/*   async render(){
     const sprite = this.addComponent(Sprite)
     sprite.sizeMode = Sprite.SizeMode.CUSTOM
 
@@ -85,7 +95,7 @@ export class PlayerManager extends Component {
     animationComponent.defaultClip = animationClip
 
     animationComponent.play()
-  }
+  } */
 
   update(dt:number){
     this.updateXY()
