@@ -1,6 +1,7 @@
 import { _decorator, AnimationClip, Component, Node, Animation, SpriteFrame } from 'cc';
 import { FSM_PARAMS_TYPE_ENUM } from '../Enums';
 import State from './State';
+import { SubStateMechine } from './SubStateMechine';
 const { ccclass, property } = _decorator;
 
 type ParamsValueType = Boolean | number
@@ -17,12 +18,19 @@ export const getInitParamsTrigger = ()=>{
   }
 }
 
+export const getInitParamsNumber = () =>{
+  return {
+    type:FSM_PARAMS_TYPE_ENUM.NUMBER,
+    value:0
+  }
+}
+
 @ccclass('StateMachine')
 export abstract class StateMachine extends Component {
   private _currentState:State = null
 
-  params:Map<string,IParamsValue> = new Map()
-  stateMachines:Map<string,State> = new Map()
+  params:Map<string,IParamsValue | SubStateMechine> = new Map()
+  stateMachines:Map<string,State | SubStateMechine> = new Map()
   animationComponent:Animation
   waitingList:Array<Promise<SpriteFrame[]>> = []
 

@@ -1,7 +1,6 @@
 import { _decorator, Component, Sprite, UITransform, Animation, animation, AnimationClip, Vec3, SpriteFrame } from "cc";
-import { TILE_HEIGHT, TILE_WIDTH } from "../Tile/TileManager";
-import ResourceManager from "../../Runtime/ResourceManager";
-import { CONTROLLER_ENUM, EVENT_ENUM, PARAMS_NAME_ENUM } from "../../Enums";
+import { TILE_HEIGHT, TILE_WIDTH } from "../Tile/TileManager";;
+import { CONTROLLER_ENUM, DIRECTION_ENUM, DIRECTION_ORDER_ENUM, ENTITY_STATE_ENUM, EVENT_ENUM, PARAMS_NAME_ENUM } from "../../Enums";
 import EventManager from "../../Runtime/EventManager";
 import { PlayerStateMachine } from "./PlayerStateMachine";
 
@@ -19,6 +18,27 @@ export class PlayerManager extends Component {
   private readonly speed = 1/10
   fsm:PlayerStateMachine
 
+  private _direction:DIRECTION_ENUM
+  private _state:ENTITY_STATE_ENUM
+
+  get direction(){
+    return this._direction
+  }
+
+  set direction(value:DIRECTION_ENUM){
+    this._direction = value
+    this.fsm.setParams(PARAMS_NAME_ENUM.DIRECTION,DIRECTION_ORDER_ENUM[this._direction])
+  }
+
+  get state(){
+    return this._state
+  }
+
+  set state(value:ENTITY_STATE_ENUM){
+    this._state = value
+    this.fsm.setParams(this._state,true)
+  }
+
   async init() {
     const sprite = this.addComponent(Sprite)
     sprite.sizeMode = Sprite.SizeMode.CUSTOM
@@ -28,7 +48,8 @@ export class PlayerManager extends Component {
 
     this.fsm = this.addComponent(PlayerStateMachine)
     await this.fsm.init()
-    this.fsm.setParams(PARAMS_NAME_ENUM.IDLE,true)
+    this.direction = DIRECTION_ENUM.TOP
+    this.state = ENTITY_STATE_ENUM.IDLE
 
     EventManager.Instance.on(EVENT_ENUM.PLAYER_CTRL, this.move, this)
   }
@@ -63,39 +84,18 @@ export class PlayerManager extends Component {
     } else if (inputDirection === CONTROLLER_ENUM.LEFT) {
       this.targetX -= 1
     } else if (inputDirection === CONTROLLER_ENUM.TURNLEFT) {
-      this.fsm.setParams(PARAMS_NAME_ENUM.TURNLEFT,true)
+      if (this.direction === DIRECTION_ENUM.TOP) {
+        this.direction = DIRECTION_ENUM.LEFT
+      } else if (this.direction === DIRECTION_ENUM.LEFT) {
+        this.direction = DIRECTION_ENUM.BOTTOM
+      } else if (this.direction === DIRECTION_ENUM.BOTTOM) {
+        this.direction = DIRECTION_ENUM.RIGHT
+      } else if (this.direction === DIRECTION_ENUM.RIGHT) {
+        this.direction = DIRECTION_ENUM.TOP
+      }
+      this.state = ENTITY_STATE_ENUM.TURNLEFT
     }
   }
-
-/*   async render(){
-    const sprite = this.addComponent(Sprite)
-    sprite.sizeMode = Sprite.SizeMode.CUSTOM
-
-    const transForm = this.getComponent(UITransform)
-    transForm.setContentSize(TILE_WIDTH * 4,TILE_HEIGHT * 4)
-
-    const spriteFrames = await ResourceManager.Instance.loadDir('texture/player/idle/top')
-
-    const animationComponent = this.addComponent(Animation)
-
-    const animationClip = new AnimationClip();
-
-    const track  = new animation.ObjectTrack(); // 创建一个对象轨道
-    track.path = new animation.TrackPath().toComponent(Sprite).toProperty('spriteFrame'); // 指定轨道路径
-    const frames :Array<[number,SpriteFrame]> = spriteFrames.map((item,index)=>[ANIMATION_SPEED * index, item])
-
-    track.channel.curve.assignSorted(frames)
-
-    // 动画剪辑添加轨道
-    animationClip.addTrack(track);
-
-    animationClip.duration = frames.length * ANIMATION_SPEED
-
-    animationClip.wrapMode = AnimationClip.WrapMode.Loop
-    animationComponent.defaultClip = animationClip
-
-    animationComponent.play()
-  } */
 
   update(dt:number){
     this.updateXY()

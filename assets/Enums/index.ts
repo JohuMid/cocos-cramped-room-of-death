@@ -36,4 +36,26 @@ export enum FSM_PARAMS_TYPE_ENUM{
 export enum PARAMS_NAME_ENUM{
   IDLE = 'IDLE',
   TURNLEFT = 'TURNLEFT',
+  DIRECTION = 'DIRECTION',
+}
+
+
+export enum DIRECTION_ENUM{
+  TOP = 'TOP',
+  BOTTOM = 'BOTTOM',
+  LEFT = 'LEFT',
+  RIGHT = 'RIGHT',
+}
+
+export enum ENTITY_STATE_ENUM{
+  IDLE = 'IDLE',
+  TURNLEFT = 'TURNLEFT',
+}
+
+
+export enum DIRECTION_ORDER_ENUM{
+  TOP = 0,
+  BOTTOM = 1,
+  LEFT = 2,
+  RIGHT = 3,
 }
