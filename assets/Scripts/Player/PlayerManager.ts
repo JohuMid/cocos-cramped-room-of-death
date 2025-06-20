@@ -1,55 +1,32 @@
 import { _decorator, Component, Sprite, UITransform, Animation, animation, AnimationClip, Vec3, SpriteFrame } from "cc";
 import { TILE_HEIGHT, TILE_WIDTH } from "../Tile/TileManager";;
-import { CONTROLLER_ENUM, DIRECTION_ENUM, DIRECTION_ORDER_ENUM, ENTITY_STATE_ENUM, EVENT_ENUM, PARAMS_NAME_ENUM } from "../../Enums";
+import { CONTROLLER_ENUM, DIRECTION_ENUM, DIRECTION_ORDER_ENUM, ENTITY_STATE_ENUM, ENTITY_TYPE_ENUM, EVENT_ENUM, PARAMS_NAME_ENUM } from "../../Enums";
 import EventManager from "../../Runtime/EventManager";
 import { PlayerStateMachine } from "./PlayerStateMachine";
+import { EntityManager } from "../../Base/EntityManager";
 
 const { ccclass, property } = _decorator;
 
 
 
 @ccclass('PlayerManager')
-export class PlayerManager extends Component {
-  x:number = 0
-  y:number = 0
+export class PlayerManager extends EntityManager {
   targetX:number = 0
   targetY:number = 0
 
   private readonly speed = 1/10
-  fsm:PlayerStateMachine
-
-  private _direction:DIRECTION_ENUM
-  private _state:ENTITY_STATE_ENUM
-
-  get direction(){
-    return this._direction
-  }
-
-  set direction(value:DIRECTION_ENUM){
-    this._direction = value
-    this.fsm.setParams(PARAMS_NAME_ENUM.DIRECTION,DIRECTION_ORDER_ENUM[this._direction])
-  }
-
-  get state(){
-    return this._state
-  }
-
-  set state(value:ENTITY_STATE_ENUM){
-    this._state = value
-    this.fsm.setParams(this._state,true)
-  }
 
   async init() {
-    const sprite = this.addComponent(Sprite)
-    sprite.sizeMode = Sprite.SizeMode.CUSTOM
-
-    const transForm = this.getComponent(UITransform)
-    transForm.setContentSize(TILE_WIDTH * 4,TILE_HEIGHT * 4)
 
     this.fsm = this.addComponent(PlayerStateMachine)
     await this.fsm.init()
-    this.direction = DIRECTION_ENUM.TOP
-    this.state = ENTITY_STATE_ENUM.IDLE
+    super.init({
+      x:0,
+      y:0,
+      direction:DIRECTION_ENUM.TOP,
+      state:ENTITY_STATE_ENUM.IDLE,
+      type:ENTITY_TYPE_ENUM.PLAYER
+    })
 
     EventManager.Instance.on(EVENT_ENUM.PLAYER_CTRL, this.move, this)
   }
@@ -99,6 +76,6 @@ export class PlayerManager extends Component {
 
   update(dt:number){
     this.updateXY()
-    this.node.setPosition(this.x * TILE_WIDTH - TILE_WIDTH * 1.5, -this.y * TILE_HEIGHT + TILE_HEIGHT * 1.5)
+    super.update(dt)
   }
 }
