@@ -4,15 +4,15 @@
 */
 
 import { animation, AnimationClip, Sprite, SpriteFrame } from "cc";
-import { PlayerStateMachine } from "../Scripts/Player/PlayerStateMachine";
 import ResourceManager from "../Runtime/ResourceManager";
+import { StateMachine } from "./StateMachine";
 
 const ANIMATION_SPEED = 1/8
 
 export default class State{
   private animationClip:AnimationClip
 
-  constructor(private fsm:PlayerStateMachine,private path:string,private warpMode = AnimationClip.WrapMode.Normal){
+  constructor(private fsm:StateMachine,private path:string,private warpMode = AnimationClip.WrapMode.Normal){
     this.init()
   }
 
@@ -31,11 +31,9 @@ export default class State{
 
     // 动画剪辑添加轨道
     this.animationClip.addTrack(track);
-
+    this.animationClip.name = this.path
     this.animationClip.duration = frames.length * ANIMATION_SPEED
-
     this.animationClip.wrapMode = this.warpMode
-
   }
   run(){
     this.fsm.animationComponent.defaultClip = this.animationClip
