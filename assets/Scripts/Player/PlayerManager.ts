@@ -4,10 +4,9 @@ import { CONTROLLER_ENUM, DIRECTION_ENUM, DIRECTION_ORDER_ENUM, ENTITY_STATE_ENU
 import EventManager from "../../Runtime/EventManager";
 import { PlayerStateMachine } from "./PlayerStateMachine";
 import { EntityManager } from "../../Base/EntityManager";
+import DataManager from "../../Runtime/DataManager";
 
 const { ccclass, property } = _decorator;
-
-
 
 @ccclass('PlayerManager')
 export class PlayerManager extends EntityManager {
@@ -54,6 +53,8 @@ export class PlayerManager extends EntityManager {
   }
 
   move(inputDirection:CONTROLLER_ENUM){
+    console.log(DataManager.Instance.tileInfo);
+
     if (inputDirection === CONTROLLER_ENUM.TOP) {
       this.targetY -= 1
     } else if (inputDirection === CONTROLLER_ENUM.BOTTOM) {

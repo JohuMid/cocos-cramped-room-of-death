@@ -1,7 +1,7 @@
 import { _decorator, Component, Sprite, UITransform, Animation, animation, AnimationClip, Vec3, SpriteFrame } from "cc";
 
 import { IEntity } from "../Levels";
-import { DIRECTION_ENUM, ENTITY_STATE_ENUM, PARAMS_NAME_ENUM, DIRECTION_ORDER_ENUM } from "../Enums";
+import { DIRECTION_ENUM, ENTITY_STATE_ENUM, PARAMS_NAME_ENUM, DIRECTION_ORDER_ENUM, ENTITY_TYPE_ENUM } from "../Enums";
 import { PlayerStateMachine } from "../Scripts/Player/PlayerStateMachine";
 import { TILE_WIDTH, TILE_HEIGHT } from "../Scripts/Tile/TileManager";
 
@@ -17,6 +17,7 @@ export class EntityManager extends Component {
 
   private _direction:DIRECTION_ENUM
   private _state:ENTITY_STATE_ENUM
+  private type:ENTITY_TYPE_ENUM
 
   get direction(){
     return this._direction
@@ -45,6 +46,7 @@ export class EntityManager extends Component {
 
     this.x = params.x
     this.y = params.y
+    this.type = params.type
     this.direction = params.direction
     this.state = params.state
   }
