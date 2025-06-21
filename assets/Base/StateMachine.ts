@@ -27,9 +27,9 @@ export const getInitParamsNumber = () =>{
 
 @ccclass('StateMachine')
 export abstract class StateMachine extends Component {
-  private _currentState:State = null
+  private _currentState:State | SubStateMechine = null
 
-  params:Map<string,IParamsValue | SubStateMechine> = new Map()
+  params:Map<string,IParamsValue> = new Map()
   stateMachines:Map<string,State | SubStateMechine> = new Map()
   animationComponent:Animation
   waitingList:Array<Promise<SpriteFrame[]>> = []

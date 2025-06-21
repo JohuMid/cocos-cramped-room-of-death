@@ -1,4 +1,4 @@
-import { _decorator, AnimationClip, Component, Node, Animation, SpriteFrame } from 'cc';
+import { _decorator } from 'cc';
 import State from './State';
 import { StateMachine } from './StateMachine';
 const { ccclass, property } = _decorator;
