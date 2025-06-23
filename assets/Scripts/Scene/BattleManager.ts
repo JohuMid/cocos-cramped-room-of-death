@@ -51,33 +51,37 @@ export class BattleManager extends Component {
             DataManager.Instance.mapColumCount = level.mapInfo[0].length
 
             this.generateTileMap()
-            this.generayePlayer()
             this.generateEnemies()
+            this.generayePlayer()
+
         }
     }
 
-    generateTileMap() {
+    async generateTileMap() {
         this.stage.setParent(this.node)
         const tileMap = new Node()
         tileMap.setParent(this.stage)
         const tileMapManager = tileMap.addComponent(TileMapManager)
-        tileMapManager.init()
+        await tileMapManager.init()
 
         this.adaptPos()
     }
 
-    generayePlayer(){
+    async generayePlayer(){
         const player = createUINode()
         player.setParent(this.stage)
         const playerManager = player.addComponent(PlayerManager)
-        playerManager.init()
+        await playerManager.init()
+        DataManager.Instance.player = playerManager
+        EventManager.Instance.emit(EVENT_ENUM.PLAYER_BORN,true)
     }
 
-    generateEnemies(){
+    async generateEnemies(){
         const enemy = createUINode()
         enemy.setParent(this.stage)
         const enemyManager = enemy.addComponent(WoodenSkeletonManager)
-        enemyManager.init()
+        await enemyManager.init()
+        DataManager.Instance.enemies.push(enemyManager)
     }
 
     nextLevel(){
