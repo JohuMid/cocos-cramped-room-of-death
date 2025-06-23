@@ -93,6 +93,7 @@ export class PlayerManager extends EntityManager {
         const playerNextX = y-1
         const weaponNextY = y-2
         if (playerNextX < 0) {
+          this.state = ENTITY_STATE_ENUM.BLOCKFRONT
           return true
         }
         const playerTile = tileInfo[x][playerNextX]
@@ -100,6 +101,7 @@ export class PlayerManager extends EntityManager {
         if(playerTile && playerTile.moveable && (!weaponTile || weaponTile.turnable)){
           // empty
         } else{
+          this.state = ENTITY_STATE_ENUM.BLOCKFRONT
           return true
         }
       }
@@ -122,6 +124,7 @@ export class PlayerManager extends EntityManager {
       if ((!tileInfo[x][nextY]|| tileInfo[x][nextY].turnable) && (!tileInfo[nextX][y] || tileInfo[nextX][y].turnable) && (!tileInfo[nextX][nextY] || tileInfo[nextX][nextY].turnable)) {
         // empty
       } else {
+        this.state = ENTITY_STATE_ENUM.BLOCKTURNLEFT
         return true
       }
     }
