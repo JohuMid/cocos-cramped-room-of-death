@@ -20,7 +20,7 @@ export class WoodenSkeletonManager extends EntityManager {
       y:4,
       direction:DIRECTION_ENUM.TOP,
       state:ENTITY_STATE_ENUM.IDLE,
-      type:ENTITY_TYPE_ENUM.PLAYER
+      type:ENTITY_TYPE_ENUM.SKELETON_WOODEN
     })
 
     EventManager.Instance.on(EVENT_ENUM.PLAYER_BORN, this.onChangeDirection, this)
