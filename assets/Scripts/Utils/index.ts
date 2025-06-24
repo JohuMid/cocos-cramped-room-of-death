@@ -8,6 +8,9 @@ export const createUINode = (name:string = '') => {
   return node
 }
 
+export const randomByLen = (len:number)=>Array.from({length:len}).reduce<string>((total,item)=>total+Math.floor(Math.random() * 10),'')
+
+
 export const randomByRange = (start:number,end:number) => Math.floor(Math.random() * (end - start) + start)
 
 const getNumberWithinString = (str:string) => Number(str.match(reg)?.[1] || '0')

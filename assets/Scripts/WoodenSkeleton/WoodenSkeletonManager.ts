@@ -26,10 +26,17 @@ export class WoodenSkeletonManager extends EntityManager {
     EventManager.Instance.on(EVENT_ENUM.PLAYER_BORN, this.onChangeDirection, this)
     EventManager.Instance.on(EVENT_ENUM.PLAYER_MOVE_END, this.onChangeDirection, this)
     EventManager.Instance.on(EVENT_ENUM.PLAYER_MOVE_END, this.onAttack, this)
+    EventManager.Instance.on(EVENT_ENUM.ATTACK_ENEMY, this.onDead, this)
+  }
+  protected onDestroy(): void {
+    EventManager.Instance.off(EVENT_ENUM.PLAYER_BORN, this.onChangeDirection)
+    EventManager.Instance.off(EVENT_ENUM.PLAYER_MOVE_END, this.onChangeDirection)
+    EventManager.Instance.off(EVENT_ENUM.PLAYER_MOVE_END, this.onAttack)
+    EventManager.Instance.off(EVENT_ENUM.ATTACK_ENEMY, this.onDead)
   }
 
   async onChangeDirection(isInit:boolean = false){
-    if (!DataManager.Instance.player) {
+    if (!DataManager.Instance.player || this.state === ENTITY_STATE_ENUM.DEATH) {
       return
     }
     const {x:playerX,y:playerY} = DataManager.Instance.player
@@ -52,6 +59,9 @@ export class WoodenSkeletonManager extends EntityManager {
   }
 
   onAttack(){
+    if (this.state === ENTITY_STATE_ENUM.DEATH || !DataManager.Instance.player) {
+      return
+    }
     const {x:playerX,y:playerY,state:playerState} = DataManager.Instance.player
     if (((this.x === playerX && Math.abs(this.y - playerY)<=1)||(this.y === playerY && Math.abs(this.x-playerX)<=1))
       && playerState !== ENTITY_STATE_ENUM.DEATH && playerState !== ENTITY_STATE_ENUM.AIRDEATH) {
@@ -59,6 +69,15 @@ export class WoodenSkeletonManager extends EntityManager {
       EventManager.Instance.emit(EVENT_ENUM.ATTACK_PLAYER, ENTITY_STATE_ENUM.DEATH)
     } else{
       this.state = ENTITY_STATE_ENUM.IDLE
+    }
+  }
+
+  onDead(id:string){
+    if (this.state === ENTITY_STATE_ENUM.DEATH) {
+      return
+    }
+    if (this.id === id) {
+      this.state = ENTITY_STATE_ENUM.DEATH
     }
   }
 

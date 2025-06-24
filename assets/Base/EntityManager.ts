@@ -4,11 +4,13 @@ import { IEntity } from "../Levels";
 import { DIRECTION_ENUM, ENTITY_STATE_ENUM, PARAMS_NAME_ENUM, DIRECTION_ORDER_ENUM, ENTITY_TYPE_ENUM } from "../Enums";
 import { TILE_WIDTH, TILE_HEIGHT } from "../Scripts/Tile/TileManager";
 import { StateMachine } from "./StateMachine";
+import { randomByLen } from "../Scripts/Utils";
 
 const { ccclass, property } = _decorator;
 
 @ccclass('EntityManager')
 export class EntityManager extends Component {
+  id:string = randomByLen(12)
   x:number = 0
   y:number = 0
   fsm:StateMachine
