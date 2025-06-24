@@ -14,13 +14,4 @@ export default class IdleSubStateMachine extends DirectionSubStateMachine{
     this.stateMachines.set(DIRECTION_ENUM.LEFT,new State(fsm, BASE_URL + 'left', AnimationClip.WrapMode.Loop))
     this.stateMachines.set(DIRECTION_ENUM.RIGHT,new State(fsm, BASE_URL + 'right', AnimationClip.WrapMode.Loop))
   }
-
-  init(){
-
-  }
-
-  run(){
-    const value = this.fsm.getParams(PARAMS_NAME_ENUM.DIRECTION)
-    this.currentState = this.stateMachines.get(DIRECTION_ORDER_ENUM[value as number])
-  }
 }

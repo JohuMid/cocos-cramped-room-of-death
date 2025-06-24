@@ -13,13 +13,4 @@ export default class BlockTurnRightSubStateMachine extends DirectionSubStateMach
     this.stateMachines.set(DIRECTION_ENUM.LEFT,new State(fsm, BASE_URL + 'left'))
     this.stateMachines.set(DIRECTION_ENUM.RIGHT,new State(fsm, BASE_URL + 'right'))
   }
-
-  init(){
-
-  }
-
-  run(){
-    const value = this.fsm.getParams(PARAMS_NAME_ENUM.DIRECTION)
-    this.currentState = this.stateMachines.get(DIRECTION_ORDER_ENUM[value as number])
-  }
 }
