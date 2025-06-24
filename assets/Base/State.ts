@@ -37,6 +37,9 @@ export default class State{
     this.animationClip.wrapMode = this.warpMode
   }
   run(){
+    if (this.fsm.animationComponent.defaultClip?.name === this.animationClip?.name) {
+      return
+    }
     this.fsm.animationComponent.defaultClip = this.animationClip
     this.fsm.animationComponent.play()
   }

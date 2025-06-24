@@ -82,6 +82,7 @@ export class BattleManager extends Component {
         const enemyManager = enemy.addComponent(WoodenSkeletonManager)
         await enemyManager.init()
         DataManager.Instance.enemies.push(enemyManager)
+
     }
 
     nextLevel(){

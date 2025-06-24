@@ -1,4 +1,4 @@
-import { _decorator, Component, Sprite, UITransform, Animation, animation, AnimationClip, Vec3, SpriteFrame } from "cc";
+import { _decorator, Component, Sprite, UITransform, Animation, animation, AnimationClip, Vec3, SpriteFrame, log } from "cc";
 import { CONTROLLER_ENUM, DIRECTION_ENUM, DIRECTION_ORDER_ENUM, ENTITY_STATE_ENUM, ENTITY_TYPE_ENUM, EVENT_ENUM, PARAMS_NAME_ENUM } from "../../Enums";
 import EventManager from "../../Runtime/EventManager";
 import { PlayerStateMachine } from "./PlayerStateMachine";
@@ -67,6 +67,9 @@ export class PlayerManager extends EntityManager {
     if (this.state === ENTITY_STATE_ENUM.DEATH || this.state === ENTITY_STATE_ENUM.AIRDEATH) {
       return
     }
+    if (this.wilAttack(inputDirection)) {
+      return
+    }
     if (this.willBlock(inputDirection)) {
       return
     }
@@ -111,6 +114,39 @@ export class PlayerManager extends EntityManager {
       }
       this.state = ENTITY_STATE_ENUM.TURNRIGHT
     }
+  }
+
+  wilAttack(type: CONTROLLER_ENUM){
+    const enemies = DataManager.Instance.enemies
+    for (let i = 0; i < enemies.length; i++) {
+      const {x:enemyX,y:enemyY} = enemies[i];
+      if (type === CONTROLLER_ENUM.TOP && this.direction === DIRECTION_ENUM.TOP
+        && enemyX ===this.x
+        && enemyY === this.targetY-2)
+      {
+        this.state = ENTITY_STATE_ENUM.ATTACK
+        return true
+      } else if (type === CONTROLLER_ENUM.LEFT && this.direction === DIRECTION_ENUM.LEFT
+        && enemyX ===this.x-2
+        && enemyY === this.targetY)
+      {
+        this.state = ENTITY_STATE_ENUM.ATTACK
+        return true
+      } else if (type === CONTROLLER_ENUM.BOTTOM && this.direction === DIRECTION_ENUM.BOTTOM
+        && enemyX ===this.x
+        && enemyY === this.targetY+2)
+      {
+        this.state = ENTITY_STATE_ENUM.ATTACK
+        return true
+      } else if (type === CONTROLLER_ENUM.RIGHT && this.direction === DIRECTION_ENUM.RIGHT
+        && enemyX ===this.x+2
+        && enemyY === this.targetY)
+      {
+        this.state = ENTITY_STATE_ENUM.ATTACK
+        return true
+      }
+    }
+    return false
   }
 
   willBlock(inputDirection: CONTROLLER_ENUM){
