@@ -3,6 +3,8 @@ import { _decorator, AnimationClip, Component, Node, Animation, SpriteFrame } fr
 import { ENTITY_STATE_ENUM, FSM_PARAMS_TYPE_ENUM, PARAMS_NAME_ENUM } from '../../Enums';
 import { getInitParamsNumber, getInitParamsTrigger, StateMachine } from '../../Base/StateMachine';
 import IdleSubStateMachine from './IdleSubStateMachine';
+import AttackSubStateMachine from './AttackSubStateMachine';
+import { EntityManager } from '../../Base/EntityManager';
 
 const { ccclass, property } = _decorator;
 
@@ -21,30 +23,34 @@ export class WoodenSkeletonStateMachine extends StateMachine {
 
   initParams(){
     this.params.set(PARAMS_NAME_ENUM.IDLE,getInitParamsTrigger())
+    this.params.set(PARAMS_NAME_ENUM.ATTACK,getInitParamsTrigger())
     this.params.set(PARAMS_NAME_ENUM.DIRECTION,getInitParamsNumber())
   }
 
   initStateMachines(){
     this.stateMachines.set(PARAMS_NAME_ENUM.IDLE,new IdleSubStateMachine(this))
+    this.stateMachines.set(PARAMS_NAME_ENUM.ATTACK,new AttackSubStateMachine(this))
   }
 
   initAnimationEvent(){
-    /* this.animationComponent.on(Animation.EventType.FINISHED,()=>{
+    this.animationComponent.on(Animation.EventType.FINISHED,()=>{
       const name = this.animationComponent.defaultClip.name
-      const whiteList = ['block','turn']
+      const whiteList = ['attack']
       if (whiteList.some(v=>name.includes(v))) {
         this.node.getComponent(EntityManager).state = ENTITY_STATE_ENUM.IDLE
-        // this.setParams(PARAMS_NAME_ENUM.IDLE,true)
       }
-    }) */
+    })
   }
 
   run(){
     switch(this.currentState){
       case this.stateMachines.get(PARAMS_NAME_ENUM.IDLE):
+      case this.stateMachines.get(PARAMS_NAME_ENUM.ATTACK):
         if(this.params.get(PARAMS_NAME_ENUM.IDLE).value){
           this.currentState = this.stateMachines.get(PARAMS_NAME_ENUM.IDLE)
-        } else{
+        } else if(this.params.get(PARAMS_NAME_ENUM.ATTACK).value){
+          this.currentState = this.stateMachines.get(PARAMS_NAME_ENUM.ATTACK)
+        }else{
           this.currentState = this.currentState
         }
         break;
