@@ -4,6 +4,7 @@ import { EntityManager } from "../../Base/EntityManager";
 import EventManager from "../../Runtime/EventManager";
 import { DoorStateMachine } from "./DoorStateMachine";
 import DataManager from "../../Runtime/DataManager";
+import { IEntity } from "../../Levels";
 
 const { ccclass, property } = _decorator;
 
@@ -11,17 +12,11 @@ const { ccclass, property } = _decorator;
 export class DoorManager extends EntityManager {
   private readonly speed = 1/10
 
-  async init() {
+  async init(params: IEntity) {
 
     this.fsm = this.addComponent(DoorStateMachine)
     await this.fsm.init()
-    super.init({
-      x:7,
-      y:8,
-      direction:DIRECTION_ENUM.TOP,
-      state:ENTITY_STATE_ENUM.IDLE,
-      type:ENTITY_TYPE_ENUM.DOOR
-    })
+    super.init(params)
 
     EventManager.Instance.on(EVENT_ENUM.DOOR_OPEN, this.onOpen, this)
   }

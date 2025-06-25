@@ -51,6 +51,8 @@ export class PlayerManager extends EntityManager {
   onDead(state:ENTITY_STATE_ENUM){
     if (state === ENTITY_STATE_ENUM.DEATH) {
       this.state = ENTITY_STATE_ENUM.DEATH
+    } else if(state === ENTITY_STATE_ENUM.AIRDEATH){
+      this.state = ENTITY_STATE_ENUM.AIRDEATH
     }
   }
 
@@ -98,8 +100,8 @@ export class PlayerManager extends EntityManager {
       } else if (this.direction === DIRECTION_ENUM.RIGHT) {
         this.direction = DIRECTION_ENUM.TOP
       }
-      EventManager.Instance.emit(EVENT_ENUM.PLAYER_MOVE_END)
       this.state = ENTITY_STATE_ENUM.TURNLEFT
+      EventManager.Instance.emit(EVENT_ENUM.PLAYER_MOVE_END)
     } else if (inputDirection === CONTROLLER_ENUM.TURNRIGHT) {
       if (this.direction === DIRECTION_ENUM.TOP) {
         this.direction = DIRECTION_ENUM.RIGHT
@@ -111,6 +113,7 @@ export class PlayerManager extends EntityManager {
         this.direction = DIRECTION_ENUM.TOP
       }
       this.state = ENTITY_STATE_ENUM.TURNRIGHT
+      EventManager.Instance.emit(EVENT_ENUM.PLAYER_MOVE_END)
     }
   }
 
