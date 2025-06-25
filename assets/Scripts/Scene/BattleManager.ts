@@ -5,10 +5,11 @@ import levels, { ILevel } from '../../Levels';
 import DataManager from '../../Runtime/DataManager';
 import { TILE_HEIGHT, TILE_WIDTH } from '../Tile/TileManager';
 import EventManager from '../../Runtime/EventManager';
-import { EVENT_ENUM } from '../../Enums';
+import { DIRECTION_ENUM, ENTITY_STATE_ENUM, ENTITY_TYPE_ENUM, EVENT_ENUM } from '../../Enums';
 import { PlayerManager } from '../Player/PlayerManager';
 import { WoodenSkeletonManager } from '../WoodenSkeleton/WoodenSkeletonManager';
 import { DoorManager } from '../Door/DoorManager';
+import { IronSkeletonManager } from '../IronSkeleton/IronSkeletonManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('BattleManager')
@@ -81,18 +82,44 @@ export class BattleManager extends Component {
         const player = createUINode()
         player.setParent(this.stage)
         const playerManager = player.addComponent(PlayerManager)
-        await playerManager.init()
+        await playerManager.init(
+            {
+                x:2,
+                y:8,
+                direction:DIRECTION_ENUM.TOP,
+                state:ENTITY_STATE_ENUM.IDLE,
+                type:ENTITY_TYPE_ENUM.PLAYER
+            }
+        )
         DataManager.Instance.player = playerManager
         EventManager.Instance.emit(EVENT_ENUM.PLAYER_BORN,true)
     }
 
     async generateEnemies(){
-        const enemy = createUINode()
-        enemy.setParent(this.stage)
-        const enemyManager = enemy.addComponent(WoodenSkeletonManager)
-        await enemyManager.init()
-        DataManager.Instance.enemies.push(enemyManager)
+        const enemy1 = createUINode()
+        enemy1.setParent(this.stage)
+        const enemyManager1 = enemy1.addComponent(WoodenSkeletonManager)
+        await enemyManager1.init({
+            x:2,
+            y:4,
+            direction:DIRECTION_ENUM.TOP,
+            state:ENTITY_STATE_ENUM.IDLE,
+            type:ENTITY_TYPE_ENUM.SKELETON_WOODEN
+        })
+        DataManager.Instance.enemies.push(enemyManager1)
 
+
+        const enemy2 = createUINode()
+        enemy2.setParent(this.stage)
+        const enemyManager2 = enemy2.addComponent(IronSkeletonManager)
+        await enemyManager2.init({
+            x:2,
+            y:2,
+            direction:DIRECTION_ENUM.TOP,
+            state:ENTITY_STATE_ENUM.IDLE,
+            type:ENTITY_TYPE_ENUM.SKELETON_IRON
+        })
+        DataManager.Instance.enemies.push(enemyManager2)
     }
 
     nextLevel(){
