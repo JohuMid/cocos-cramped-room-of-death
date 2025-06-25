@@ -55,7 +55,7 @@ export class BattleManager extends Component {
             this.generateTileMap()
             this.generateDoor()
             this.generateEnemies()
-            this.generayePlayer()
+            this.generatePlayer()
 
         }
     }
@@ -78,7 +78,7 @@ export class BattleManager extends Component {
         DataManager.Instance.door = doorManager
     }
 
-    async generayePlayer(){
+    async generatePlayer(){
         const player = createUINode()
         player.setParent(this.stage)
         const playerManager = player.addComponent(PlayerManager)
@@ -101,7 +101,7 @@ export class BattleManager extends Component {
         const enemyManager1 = enemy1.addComponent(WoodenSkeletonManager)
         await enemyManager1.init({
             x:2,
-            y:4,
+            y:5,
             direction:DIRECTION_ENUM.TOP,
             state:ENTITY_STATE_ENUM.IDLE,
             type:ENTITY_TYPE_ENUM.SKELETON_WOODEN
