@@ -28,5 +28,6 @@ export default class DataManager extends Singleton {
     this.mapRowCount = 0
     this.mapColumCount = 0
     this.enemies = []
+    this.bursts = []
   }
 }
