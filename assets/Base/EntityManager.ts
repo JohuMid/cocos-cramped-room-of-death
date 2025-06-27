@@ -23,9 +23,9 @@ export class EntityManager extends Component {
     return this._direction
   }
 
-  set direction(value:DIRECTION_ENUM){
-    this._direction = value
-    this.fsm.setParams(PARAMS_NAME_ENUM.DIRECTION,DIRECTION_ORDER_ENUM[this._direction])
+  set direction(newDirection:DIRECTION_ENUM){
+    this._direction = newDirection
+    this.fsm.setParams(PARAMS_NAME_ENUM.DIRECTION, DIRECTION_ORDER_ENUM[this._direction])
   }
 
   get state(){

@@ -27,6 +27,12 @@ export class PlayerManager extends EntityManager {
     EventManager.Instance.on(EVENT_ENUM.ATTACK_PLAYER, this.onDead, this)
   }
 
+  protected onDestroy(): void {
+    super.destroy()
+    EventManager.Instance.off(EVENT_ENUM.PLAYER_CTRL, this.inputHandle)
+    EventManager.Instance.off(EVENT_ENUM.ATTACK_PLAYER, this.onDead)
+  }
+
   updateXY(){
     if (this.targetX<this.x) {
       this.x -= this.speed

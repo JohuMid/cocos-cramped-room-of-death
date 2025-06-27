@@ -5,13 +5,14 @@ import levels, { ILevel } from '../../Levels';
 import DataManager from '../../Runtime/DataManager';
 import { TILE_HEIGHT, TILE_WIDTH } from '../Tile/TileManager';
 import EventManager from '../../Runtime/EventManager';
-import { DIRECTION_ENUM, ENTITY_STATE_ENUM, ENTITY_TYPE_ENUM, EVENT_ENUM } from '../../Enums';
+import { ENTITY_STATE_ENUM, ENTITY_TYPE_ENUM, EVENT_ENUM } from '../../Enums';
 import { PlayerManager } from '../Player/PlayerManager';
 import { WoodenSkeletonManager } from '../WoodenSkeleton/WoodenSkeletonManager';
 import { DoorManager } from '../Door/DoorManager';
 import { IronSkeletonManager } from '../IronSkeleton/IronSkeletonManager';
 import { BurstManager } from '../Burst/BurstManager';
 import { SpikesManager } from '../Spikes/SpikesManager';
+import { EnemyManager } from '../../Base/EnemyManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('BattleManager')
@@ -19,7 +20,9 @@ export class BattleManager extends Component {
     level:ILevel
     stage:Node
     protected onLoad(): void {
+        DataManager.Instance.levelIndex = 1
         EventManager.Instance.on(EVENT_ENUM.NEXT_LEVEL, this.nextLevel, this)
+        EventManager.Instance.on(EVENT_ENUM.PLAYER_MOVE_END, this.checkArrived, this)
     }
 
     protected onDestroy(): void {
@@ -56,9 +59,9 @@ export class BattleManager extends Component {
 
             this.generateTileMap()
             this.generateDoor()
-            // this.generateBurst()
+            this.generateBurst()
             this.generateSpikes()
-            // this.generateEnemies()
+            this.generateEnemies()
             this.generatePlayer()
         }
     }
@@ -77,13 +80,7 @@ export class BattleManager extends Component {
         const door = createUINode()
         door.setParent(this.stage)
         const doorManager = door.addComponent(DoorManager)
-        await doorManager.init({
-            x:7,
-            y:8,
-            direction:DIRECTION_ENUM.TOP,
-            state:ENTITY_STATE_ENUM.IDLE,
-            type:ENTITY_TYPE_ENUM.DOOR
-          })
+        await doorManager.init(this.level.door)
         DataManager.Instance.door = doorManager
     }
 
@@ -91,75 +88,69 @@ export class BattleManager extends Component {
         const player = createUINode()
         player.setParent(this.stage)
         const playerManager = player.addComponent(PlayerManager)
-        await playerManager.init(
-            {
-                x:2,
-                y:8,
-                direction:DIRECTION_ENUM.TOP,
-                state:ENTITY_STATE_ENUM.IDLE,
-                type:ENTITY_TYPE_ENUM.PLAYER
-            }
-        )
+        await playerManager.init(this.level.player)
         DataManager.Instance.player = playerManager
         EventManager.Instance.emit(EVENT_ENUM.PLAYER_BORN,true)
     }
+
     async generateBurst(){
-        const burst = createUINode()
-        burst.setParent(this.stage)
-        const burstManager = burst.addComponent(BurstManager)
-        await burstManager.init({
-            x:2,
-            y:6,
-            direction:DIRECTION_ENUM.TOP,
-            state:ENTITY_STATE_ENUM.IDLE,
-            type:ENTITY_TYPE_ENUM.BURST
-        })
-        DataManager.Instance.bursts.push(burstManager)
+        const promise = []
+        for (let i = 0; i < this.level.bursts.length; i++) {
+            const burst = this.level.bursts[i];
+            const node = createUINode()
+            node.setParent(this.stage)
+            const manager = node.addComponent(BurstManager)
+            promise.push(await manager.init(burst))
+            DataManager.Instance.bursts.push(manager)
+        }
+        await Promise.all(promise)
     }
 
     async generateSpikes(){
-        const spikes = createUINode()
-        spikes.setParent(this.stage)
-        const spikesManager = spikes.addComponent(SpikesManager)
-        await spikesManager.init({
-            x:2,
-            y:6,
-            type:ENTITY_TYPE_ENUM.SPIKES_FOUR,
-            count:0,
-        })
-        DataManager.Instance.spikes.push(spikesManager)
+        const promise = []
+        for (let i = 0; i < this.level.spikes.length; i++) {
+            const spikes = this.level.spikes[i];
+            const node = createUINode()
+            node.setParent(this.stage)
+            const manager = node.addComponent(SpikesManager)
+            promise.push(await manager.init(spikes))
+            DataManager.Instance.spikes.push(manager)
+        }
+        await Promise.all(promise)
     }
 
     async generateEnemies(){
-        const enemy1 = createUINode()
-        enemy1.setParent(this.stage)
-        const enemyManager1 = enemy1.addComponent(WoodenSkeletonManager)
-        await enemyManager1.init({
-            x:2,
-            y:5,
-            direction:DIRECTION_ENUM.TOP,
-            state:ENTITY_STATE_ENUM.IDLE,
-            type:ENTITY_TYPE_ENUM.SKELETON_WOODEN
-        })
-        DataManager.Instance.enemies.push(enemyManager1)
+        DataManager.Instance.enemies = []
+        const promises = []
+        for (let i = 0; i < this.level.enemies.length; i++) {
+        const enemy = this.level.enemies[i]
+        const node = createUINode()
+        node.setParent(this.stage)
+        let manager: EnemyManager;
+        if (enemy.type === ENTITY_TYPE_ENUM.SKELETON_WOODEN) {
+            manager = node.addComponent(WoodenSkeletonManager);
+        } else {
+            manager = node.addComponent(IronSkeletonManager);
+        }
+        promises.push(manager.init(enemy))
+        DataManager.Instance.enemies.push(manager)
+        }
 
-
-        const enemy2 = createUINode()
-        enemy2.setParent(this.stage)
-        const enemyManager2 = enemy2.addComponent(IronSkeletonManager)
-        await enemyManager2.init({
-            x:2,
-            y:2,
-            direction:DIRECTION_ENUM.TOP,
-            state:ENTITY_STATE_ENUM.IDLE,
-            type:ENTITY_TYPE_ENUM.SKELETON_IRON
-        })
-        DataManager.Instance.enemies.push(enemyManager2)
+        await Promise.all(promises)
     }
 
     nextLevel(){
         DataManager.Instance.levelIndex++
         this.initLevel()
+    }
+
+    checkArrived(){
+        const {x:playerX, y:playerY} = DataManager.Instance.player
+        const {x:doorX, y:doorY, state:doorState} = DataManager.Instance.door
+        if (playerX === doorX && playerY === doorY && doorState === ENTITY_STATE_ENUM.DEATH) {
+            EventManager.Instance.emit(EVENT_ENUM.NEXT_LEVEL)
+
+        }
     }
 
     clearLevel(){
