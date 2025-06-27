@@ -5,7 +5,7 @@ import levels, { ILevel } from '../../Levels';
 import DataManager from '../../Runtime/DataManager';
 import { TILE_HEIGHT, TILE_WIDTH } from '../Tile/TileManager';
 import EventManager from '../../Runtime/EventManager';
-import { ENTITY_STATE_ENUM, ENTITY_TYPE_ENUM, EVENT_ENUM } from '../../Enums';
+import { DIRECTION_ENUM, ENTITY_STATE_ENUM, ENTITY_TYPE_ENUM, EVENT_ENUM } from '../../Enums';
 import { PlayerManager } from '../Player/PlayerManager';
 import { WoodenSkeletonManager } from '../WoodenSkeleton/WoodenSkeletonManager';
 import { DoorManager } from '../Door/DoorManager';
@@ -13,6 +13,7 @@ import { IronSkeletonManager } from '../IronSkeleton/IronSkeletonManager';
 import { BurstManager } from '../Burst/BurstManager';
 import { SpikesManager } from '../Spikes/SpikesManager';
 import { EnemyManager } from '../../Base/EnemyManager';
+import { SmokeManager } from '../Smoke/SmokeManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('BattleManager')
@@ -23,6 +24,7 @@ export class BattleManager extends Component {
         DataManager.Instance.levelIndex = 1
         EventManager.Instance.on(EVENT_ENUM.NEXT_LEVEL, this.nextLevel, this)
         EventManager.Instance.on(EVENT_ENUM.PLAYER_MOVE_END, this.checkArrived, this)
+        EventManager.Instance.on(EVENT_ENUM.SHOW_SMOKE, this.generateSmoke, this)
     }
 
     protected onDestroy(): void {
@@ -137,6 +139,20 @@ export class BattleManager extends Component {
         }
 
         await Promise.all(promises)
+    }
+
+    async generateSmoke(x:number,y:number,direction:DIRECTION_ENUM){
+        const smoke = createUINode()
+        smoke.setParent(this.stage)
+        const smokeManager = smoke.addComponent(SmokeManager)
+        await smokeManager.init({
+            x,
+            y,
+            direction,
+            state:ENTITY_STATE_ENUM.IDLE,
+            type:ENTITY_TYPE_ENUM.SMOKE
+        })
+        DataManager.Instance.player
     }
 
     nextLevel(){
