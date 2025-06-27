@@ -15,8 +15,4 @@ export default class SpikesFourSubStateMachine extends SpikesSubStateMachine{
     this.stateMachines.set(SPIKE_COUNT_ENUM.FOUR,new State(fsm, BASE_URL + 'four'))
     this.stateMachines.set(SPIKE_COUNT_ENUM.FIVE,new State(fsm, BASE_URL + 'five'))
   }
-
-  init(): void {
-
-  }
 }
