@@ -20,6 +20,7 @@ const { ccclass, property } = _decorator;
 export class BattleManager extends Component {
     level:ILevel
     stage:Node
+    private smokeLayer:Node
     protected onLoad(): void {
         DataManager.Instance.levelIndex = 1
         EventManager.Instance.on(EVENT_ENUM.NEXT_LEVEL, this.nextLevel, this)
@@ -63,6 +64,7 @@ export class BattleManager extends Component {
             this.generateDoor()
             this.generateBurst()
             this.generateSpikes()
+            this.generateSmokeLayer()
             this.generateEnemies()
             this.generatePlayer()
         }
@@ -142,18 +144,33 @@ export class BattleManager extends Component {
     }
 
     async generateSmoke(x:number,y:number,direction:DIRECTION_ENUM){
-        const smoke = createUINode()
-        smoke.setParent(this.stage)
-        const smokeManager = smoke.addComponent(SmokeManager)
-        await smokeManager.init({
-            x,
-            y,
-            direction,
-            state:ENTITY_STATE_ENUM.IDLE,
-            type:ENTITY_TYPE_ENUM.SMOKE
-        })
-        DataManager.Instance.player
+        const item = DataManager.Instance.smokes.find(smoke=>smoke.state === ENTITY_STATE_ENUM.DEATH)
+        if (item) {
+            item.x = x
+            item.y = y
+            item.direction = direction
+            item.state = ENTITY_STATE_ENUM.IDLE
+            item.node.setPosition(x * TILE_WIDTH - TILE_WIDTH * 1.5, -y * TILE_HEIGHT + TILE_HEIGHT * 1.5)
+        } else{
+            const smoke = createUINode()
+            smoke.setParent(this.smokeLayer)
+            const smokeManager = smoke.addComponent(SmokeManager)
+            await smokeManager.init({
+                x,
+                y,
+                direction,
+                state:ENTITY_STATE_ENUM.IDLE,
+                type:ENTITY_TYPE_ENUM.SMOKE
+            })
+            DataManager.Instance.smokes.push(smokeManager)
+        }
     }
+
+    generateSmokeLayer(){
+        this.smokeLayer = createUINode()
+        this.smokeLayer.setParent(this.stage)
+    }
+
 
     nextLevel(){
         DataManager.Instance.levelIndex++
@@ -161,6 +178,9 @@ export class BattleManager extends Component {
     }
 
     checkArrived(){
+        if (!DataManager.Instance.player || !DataManager.Instance.door) {
+            return
+        }
         const {x:playerX, y:playerY} = DataManager.Instance.player
         const {x:doorX, y:doorY, state:doorState} = DataManager.Instance.door
         if (playerX === doorX && playerY === doorY && doorState === ENTITY_STATE_ENUM.DEATH) {

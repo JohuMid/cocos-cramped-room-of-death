@@ -1,4 +1,3 @@
-
 import { TILE_TYPE_ENUM, DIRECTION_ENUM, ENTITY_STATE_ENUM, ENTITY_TYPE_ENUM } from '../Enums';
 import { IEntity, ILevel, ISpikes } from './index';
 
