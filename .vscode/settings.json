@@ -76,5 +76,6 @@
   "editor.tabSize": 2,
   "svg.preview.background": "black",
   // css modules 默认支持 camelCase
-  "cssModules.camelCase": true
+  "cssModules.camelCase": true,
+  "svn.ignoreMissingSvnWarning": true
 }

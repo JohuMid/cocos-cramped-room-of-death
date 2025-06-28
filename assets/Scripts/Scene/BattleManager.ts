@@ -15,6 +15,7 @@ import { SpikesManager } from '../Spikes/SpikesManager';
 import { EnemyManager } from '../../Base/EnemyManager';
 import { SmokeManager } from '../Smoke/SmokeManager';
 import FaderManager from '../../Runtime/FaderManager';
+import { ShakeManager } from '../UI/ShakeManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('BattleManager')
@@ -36,13 +37,14 @@ export class BattleManager extends Component {
     generateStage(){
         this.stage = createUINode()
         this.stage.setParent(this.node)
+        this.stage.addComponent(ShakeManager)
     }
 
     adaptPos(){
         const {mapRowCount, mapColumCount} = DataManager.Instance
         const disX = TILE_WIDTH * mapColumCount/2
         const disY = TILE_HEIGHT * mapRowCount/2
-
+        this.stage.getComponent(ShakeManager).stop()
         this.stage.setPosition(-disX,disY + 80)
     }
 
