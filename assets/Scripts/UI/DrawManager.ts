@@ -1,4 +1,4 @@
-import { _decorator, Color, Component, Graphics, Node, view, game } from 'cc';
+import { _decorator, Color, Component, Graphics, Node, view, game, BlockInputEvents, UITransform } from 'cc';
 const { ccclass, property } = _decorator;
 
 const {width:SCREEN_WIDTH,height:SCREEN_HEIGHT} = view.getVisibleSize()
@@ -18,9 +18,14 @@ export class DrawManager extends Component {
   private oldTime:number = 0
   private durtion:number = 0
   private fadeResolve:(value:PromiseLike<null>)=>void
+  private block:BlockInputEvents
 
   init(){
-    this.ctx = this.getComponent(Graphics)
+    this.block = this.addComponent(BlockInputEvents)
+    this.ctx = this.addComponent(Graphics)
+    const transForm = this.getComponent(UITransform)
+    transForm.setAnchorPoint(0.5,0.5)
+    transForm.setContentSize(SCREEN_WIDTH,SCREEN_HEIGHT)
 
     this.setAlpha(1)
   }
@@ -30,6 +35,7 @@ export class DrawManager extends Component {
     this.ctx.rect(0,0,SCREEN_WIDTH,SCREEN_HEIGHT)
     this.ctx.fillColor = new Color(0,0,0,255*percent)
     this.ctx.fill()
+    this.block.enabled = percent === 1
   }
 
   protected update(dt: number): void {
@@ -41,6 +47,7 @@ export class DrawManager extends Component {
         } else {
           this.setAlpha(1)
           this.state = FADE_STATE_ENUM.IDLE
+          this.fadeResolve(null)
         }
         break;
       case FADE_STATE_ENUM.FADE_OUT:
@@ -49,6 +56,7 @@ export class DrawManager extends Component {
         } else {
           this.setAlpha(0)
           this.state = FADE_STATE_ENUM.IDLE
+          this.fadeResolve(null)
         }
         break;
     }
