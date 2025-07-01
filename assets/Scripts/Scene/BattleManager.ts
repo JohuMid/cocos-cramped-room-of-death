@@ -2,7 +2,7 @@ import { _decorator, Component, Node } from 'cc';
 import { TileMapManager } from '../Tile/TileMapManager';
 import { createUINode } from '../Utils';
 import levels, { ILevel } from '../../Levels';
-import DataManager from '../../Runtime/DataManager';
+import DataManager, { IRecord } from '../../Runtime/DataManager';
 import { TILE_HEIGHT, TILE_WIDTH } from '../Tile/TileManager';
 import EventManager from '../../Runtime/EventManager';
 import { DIRECTION_ENUM, ENTITY_STATE_ENUM, ENTITY_TYPE_ENUM, EVENT_ENUM } from '../../Enums';
@@ -28,10 +28,16 @@ export class BattleManager extends Component {
         EventManager.Instance.on(EVENT_ENUM.NEXT_LEVEL, this.nextLevel, this)
         EventManager.Instance.on(EVENT_ENUM.PLAYER_MOVE_END, this.checkArrived, this)
         EventManager.Instance.on(EVENT_ENUM.SHOW_SMOKE, this.generateSmoke, this)
+        EventManager.Instance.on(EVENT_ENUM.RECORD_STEP, this.record, this)
+        EventManager.Instance.on(EVENT_ENUM.REVOKE_STEP, this.revoke, this)
     }
 
     protected onDestroy(): void {
         EventManager.Instance.off(EVENT_ENUM.NEXT_LEVEL, this.nextLevel)
+        EventManager.Instance.off(EVENT_ENUM.PLAYER_MOVE_END, this.checkArrived)
+        EventManager.Instance.off(EVENT_ENUM.SHOW_SMOKE, this.generateSmoke)
+        EventManager.Instance.off(EVENT_ENUM.RECORD_STEP, this.record)
+        EventManager.Instance.off(EVENT_ENUM.REVOKE_STEP, this.revoke)
     }
 
     generateStage(){
@@ -201,6 +207,89 @@ export class BattleManager extends Component {
     clearLevel(){
         this.stage.destroyAllChildren()
         DataManager.Instance.reset()
+    }
+
+    record(){
+        const item:IRecord = {
+            player:{
+                x:DataManager.Instance.player.x,
+                y:DataManager.Instance.player.y,
+                direction:DataManager.Instance.player.direction,
+                state:(DataManager.Instance.player.state === ENTITY_STATE_ENUM.IDLE ||
+                    DataManager.Instance.player.state === ENTITY_STATE_ENUM.DEATH ||
+                    DataManager.Instance.player.state === ENTITY_STATE_ENUM.AIRDEATH)?
+                    DataManager.Instance.player.state:ENTITY_STATE_ENUM.IDLE,
+                type:DataManager.Instance.player.type,
+            },
+            door:{
+                x: DataManager.Instance.door.x,
+                y: DataManager.Instance.door.y,
+                state: DataManager.Instance.door.state,
+                type: DataManager.Instance.door.type,
+                direction: DIRECTION_ENUM.TOP
+            },
+            enemies:DataManager.Instance.enemies.map(({x,y,direction,state,type})=>({
+                x,
+                y,
+                direction,
+                state,
+                type,
+            })),
+            bursts:DataManager.Instance.bursts.map(({x,y,direction,state,type})=>({
+                x,
+                y,
+                direction,
+                state,
+                type,
+            })),
+            spikes:DataManager.Instance.spikes.map(({x,y,count,type})=>({
+                x,
+                y,
+                count,
+                type,
+            }))
+        }
+        DataManager.Instance.records.push(item)
+    }
+
+    revoke(){
+        const item = DataManager.Instance.records.pop()
+        if (item) {
+            DataManager.Instance.player.x = DataManager.Instance.player.targetX = item.player.x
+            DataManager.Instance.player.y = DataManager.Instance.player.targetY = item.player.y
+            DataManager.Instance.player.direction = item.player.direction
+            DataManager.Instance.player.state = item.player.state
+            DataManager.Instance.player.type = item.player.type
+
+            DataManager.Instance.door.x = item.door.x
+            DataManager.Instance.door.y = item.door.y
+            DataManager.Instance.door.direction = item.door.direction
+            DataManager.Instance.door.state = item.door.state
+            DataManager.Instance.door.type = item.door.type
+
+            DataManager.Instance.enemies.forEach((enemy,index)=>{
+                enemy.x = item.enemies[index].x
+                enemy.y = item.enemies[index].y
+                enemy.direction = item.enemies[index].direction
+                enemy.state = item.enemies[index].state
+                enemy.type = item.enemies[index].type
+            })
+
+            DataManager.Instance.bursts.forEach((burst,index)=>{
+                burst.x = item.bursts[index].x
+                burst.y = item.bursts[index].y
+                burst.direction = item.bursts[index].direction
+                burst.state = item.bursts[index].state
+                burst.type = item.bursts[index].type
+            })
+
+            DataManager.Instance.spikes.forEach((spike,index)=>{
+                spike.x = item.spikes[index].x
+                spike.y = item.spikes[index].y
+                spike.count = item.spikes[index].count
+                spike.type = item.spikes[index].type
+            })
+        }
     }
 
     update(deltaTime: number) {
