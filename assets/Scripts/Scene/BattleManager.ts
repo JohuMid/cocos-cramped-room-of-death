@@ -1,4 +1,4 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, director, Node } from 'cc';
 import { TileMapManager } from '../Tile/TileMapManager';
 import { createUINode } from '../Utils';
 import levels, { ILevel } from '../../Levels';
@@ -23,6 +23,8 @@ export class BattleManager extends Component {
     level:ILevel
     stage:Node
     private smokeLayer:Node
+    private inited = false
+
     protected onLoad(): void {
         DataManager.Instance.levelIndex = 1
         EventManager.Instance.on(EVENT_ENUM.NEXT_LEVEL, this.nextLevel, this)
@@ -30,6 +32,8 @@ export class BattleManager extends Component {
         EventManager.Instance.on(EVENT_ENUM.SHOW_SMOKE, this.generateSmoke, this)
         EventManager.Instance.on(EVENT_ENUM.RECORD_STEP, this.record, this)
         EventManager.Instance.on(EVENT_ENUM.REVOKE_STEP, this.revoke, this)
+        EventManager.Instance.on(EVENT_ENUM.RESTART_LEVEL, this.initLevel, this)
+        EventManager.Instance.on(EVENT_ENUM.OUT_BATTLE, this.outBattle, this)
     }
 
     protected onDestroy(): void {
@@ -38,6 +42,8 @@ export class BattleManager extends Component {
         EventManager.Instance.off(EVENT_ENUM.SHOW_SMOKE, this.generateSmoke)
         EventManager.Instance.off(EVENT_ENUM.RECORD_STEP, this.record)
         EventManager.Instance.off(EVENT_ENUM.REVOKE_STEP, this.revoke)
+        EventManager.Instance.off(EVENT_ENUM.RESTART_LEVEL, this.initLevel)
+        EventManager.Instance.off(EVENT_ENUM.OUT_BATTLE, this.outBattle)
     }
 
     generateStage(){
@@ -62,7 +68,12 @@ export class BattleManager extends Component {
     async initLevel(){
         const level = levels[`level${DataManager.Instance.levelIndex}`]
         if (level) {
-            await FaderManager.Instance.fadeIn()
+            if (this.inited) {
+                await FaderManager.Instance.fadeIn()
+            } else {
+                await FaderManager.Instance.mask()
+            }
+
 
             this.clearLevel()
             this.level = level
@@ -82,6 +93,9 @@ export class BattleManager extends Component {
             ])
 
             await FaderManager.Instance.fadeOut()
+            this.inited = true
+        } else {
+            EventManager.Instance.emit(EVENT_ENUM.OUT_BATTLE)
         }
     }
 
@@ -186,6 +200,10 @@ export class BattleManager extends Component {
         this.smokeLayer.setParent(this.stage)
     }
 
+    async outBattle(){
+        await FaderManager.Instance.fadeIn()
+        director.loadScene('Start')
+    }
 
     nextLevel(){
         DataManager.Instance.levelIndex++
