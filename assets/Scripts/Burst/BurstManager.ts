@@ -2,7 +2,7 @@ import { _decorator, Component, Sprite, UITransform, Animation, animation, Anima
 import EventManager from "../../Runtime/EventManager";
 import DataManager from "../../Runtime/DataManager";
 import { IEntity } from "../../Levels";
-import { EVENT_ENUM, ENTITY_STATE_ENUM } from "../../Enums";
+import { EVENT_ENUM, ENTITY_STATE_ENUM, SHAKE_TYPE_ENUM } from "../../Enums";
 import { EntityManager } from "../../Base/EntityManager";
 import { BurstStateMachine } from "./BurstStateMachine";
 import { TILE_HEIGHT, TILE_WIDTH } from "../Tile/TileManager";
@@ -34,6 +34,7 @@ export class BurstManager extends EntityManager {
       this.state = ENTITY_STATE_ENUM.ATTACK
     } else if(this.state === ENTITY_STATE_ENUM.ATTACK){
       this.state = ENTITY_STATE_ENUM.DEATH
+      EventManager.Instance.emit(EVENT_ENUM.SCREEN_SHAKE,SHAKE_TYPE_ENUM.BOTTOM)
       if (this.x === playerX && this.y === playerY) {
         EventManager.Instance.emit(EVENT_ENUM.ATTACK_PLAYER, ENTITY_STATE_ENUM.AIRDEATH)
       }

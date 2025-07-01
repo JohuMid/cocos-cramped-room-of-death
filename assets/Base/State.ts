@@ -17,7 +17,8 @@ export default class State{
     private fsm:StateMachine,
     private path:string,
     private warpMode = AnimationClip.WrapMode.Normal,
-    private speed = ANIMATION_SPEED
+    private speed = ANIMATION_SPEED,
+    private events:any[] = []
   ){
     this.init()
   }
@@ -40,6 +41,11 @@ export default class State{
     this.animationClip.name = this.path
     this.animationClip.duration = frames.length * this.speed
     this.animationClip.wrapMode = this.warpMode
+
+    this.events.forEach(event=>{
+      this.animationClip.events.push(event)
+    })
+    this.animationClip.updateEventDatas()
   }
   run(){
     if (this.fsm.animationComponent.defaultClip?.name === this.animationClip?.name) {
