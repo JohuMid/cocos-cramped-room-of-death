@@ -6,12 +6,12 @@ const { ccclass, property } = _decorator;
 @ccclass('MenuController')
 export class MenuController extends Component {
 
-    handleUndo(){
-        EventManager.Instance.emit(EVENT_ENUM.REVOKE_STEP)
-    }
+  handleUndo(){
+    EventManager.Instance.emit(EVENT_ENUM.REVOKE_STEP)
+  }
 
-    handleRestart(){
-      EventManager.Instance.emit(EVENT_ENUM.RESTART_LEVEL)
+  handleRestart(){
+    EventManager.Instance.emit(EVENT_ENUM.RESTART_LEVEL)
   }
 
   handleOut(){
