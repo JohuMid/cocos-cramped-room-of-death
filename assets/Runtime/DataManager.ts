@@ -18,7 +18,7 @@ export default class DataManager extends Singleton {
   mapInfo:Array<Array<ITile>>
   tileInfo:Array<Array<TileManager>>
   mapRowCount:number = 0
-  mapColumCount:number = 0
+  mapColumnCount:number = 0
   levelIndex:number = 1
   player:PlayerManager
   door:DoorManager
@@ -33,7 +33,7 @@ export default class DataManager extends Singleton {
     this.tileInfo = []
     this.player = null
     this.mapRowCount = 0
-    this.mapColumCount = 0
+    this.mapColumnCount = 0
     this.enemies = []
     this.bursts = []
     this.spikes = []

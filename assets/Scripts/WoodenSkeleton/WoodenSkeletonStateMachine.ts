@@ -9,8 +9,6 @@ import DeathSubStateMachine from './DeathSubStateMachine';
 
 const { ccclass, property } = _decorator;
 
-
-
 @ccclass('WoodenSkeletonStateMachine')
 export class WoodenSkeletonStateMachine extends StateMachine {
   async init(){

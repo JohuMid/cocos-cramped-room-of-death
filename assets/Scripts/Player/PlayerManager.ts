@@ -5,6 +5,8 @@ import { PlayerStateMachine } from "./PlayerStateMachine";
 import { EntityManager } from "../../Base/EntityManager";
 import DataManager from "../../Runtime/DataManager";
 import { IEntity } from "../../Levels";
+import { EnemyManager } from "../../Base/EnemyManager";
+import { BurstManager } from "../Burst/BurstManager";
 
 const { ccclass, property } = _decorator;
 
@@ -202,17 +204,21 @@ export class PlayerManager extends EntityManager {
     return ''
   }
 
-  willBlock(inputDirection: CONTROLLER_ENUM){
-    const {targetX:x, targetY:y, direction} = this
-    const {tileInfo} = DataManager.Instance
-    const {x:doorX,y:doorY,state:doorState} = DataManager.Instance.door || {}
-    const enemies = DataManager.Instance.enemies.filter(enemy=>enemy.state!==ENTITY_STATE_ENUM.DEATH)
-    const bursts = DataManager.Instance.bursts.filter(burst=>burst.state!==ENTITY_STATE_ENUM.DEATH)
+  willBlock(type: CONTROLLER_ENUM) {
+    const { targetX: x, targetY: y, direction } = this
+    const { tileInfo: tileInfo } = DataManager.Instance
+    const enemies: EnemyManager[] = DataManager.Instance.enemies.filter(
+      (enemy: EnemyManager) => enemy.state !== ENTITY_STATE_ENUM.DEATH,
+    )
+    const { x: doorX, y: doorY, state: doorState } = DataManager.Instance.door || {}
+    const bursts: BurstManager[] = DataManager.Instance.bursts.filter(
+      (burst: BurstManager) => burst.state !== ENTITY_STATE_ENUM.DEATH,
+    )
 
-    const column = 9
-    const row = 10
+    const { mapRowCount: row, mapColumnCount: column } = DataManager.Instance
 
-    if (inputDirection === CONTROLLER_ENUM.TOP) {
+    //按钮方向——向上
+    if (type === CONTROLLER_ENUM.TOP) {
       const playerNextY = y - 1
 
       //玩家方向——向上
@@ -226,19 +232,23 @@ export class PlayerManager extends EntityManager {
         const weaponNextY = y - 2
         const nextPlayerTile = tileInfo[x]?.[playerNextY]
         const nextWeaponTile = tileInfo[x]?.[weaponNextY]
-        // 判断门的碰撞
-        if (((x === doorX && playerNextY === doorY)||(x === doorX && weaponNextY === doorY))
-          &&doorState !== ENTITY_STATE_ENUM.DEATH) {
-          this.state=ENTITY_STATE_ENUM.BLOCKFRONT
+
+        //判断门
+        if (
+          ((doorX === x && doorY === playerNextY) || (doorX === x && doorY === weaponNextY)) &&
+          doorState !== ENTITY_STATE_ENUM.DEATH
+        ) {
+          this.state = ENTITY_STATE_ENUM.BLOCKFRONT
           return true
         }
 
-        // 判断敌人的碰撞
+        // 判断敌人
         for (let i = 0; i < enemies.length; i++) {
-          const {x:enemyX,y:enemyY} = enemies[i];
+          const enemy = enemies[i]
+          const { x: enemyX, y: enemyY } = enemy
 
-          if ((x === enemyX && playerNextY === enemyY)||(x === enemyX && weaponNextY === enemyY)) {
-            this.state=ENTITY_STATE_ENUM.BLOCKFRONT
+          if ((enemyX === x && enemyY === weaponNextY) || (enemyX === x && enemyY === playerNextY)) {
+            this.state = ENTITY_STATE_ENUM.BLOCKFRONT
             return true
           }
         }
@@ -251,7 +261,7 @@ export class PlayerManager extends EntityManager {
           return false
         }
 
-        //判断地图的碰撞
+        //最后判断地图元素
         if (nextPlayerTile && nextPlayerTile.moveable && (!nextWeaponTile || nextWeaponTile.turnable)) {
           // empty
         } else {
@@ -270,6 +280,7 @@ export class PlayerManager extends EntityManager {
         const weaponNextY = y
         const nextPlayerTile = tileInfo[x]?.[playerNextY]
         const nextWeaponTile = tileInfo[x]?.[weaponNextY]
+
         //判断门
         if (
           ((doorX === x && doorY === playerNextY) || (doorX === x && doorY === weaponNextY)) &&
@@ -406,7 +417,7 @@ export class PlayerManager extends EntityManager {
       }
 
       //按钮方向——向下
-    } else if (inputDirection === CONTROLLER_ENUM.BOTTOM){
+    } else if (type === CONTROLLER_ENUM.BOTTOM) {
       const playerNextY = y + 1
 
       //玩家方向——向上
@@ -456,6 +467,7 @@ export class PlayerManager extends EntityManager {
           this.state = ENTITY_STATE_ENUM.BLOCKBACK
           return true
         }
+
         //玩家方向——向下
       } else if (direction === DIRECTION_ENUM.BOTTOM) {
         if (playerNextY > column - 1) {
@@ -503,6 +515,7 @@ export class PlayerManager extends EntityManager {
           this.state = ENTITY_STATE_ENUM.BLOCKFRONT
           return true
         }
+
         //玩家方向——向左
       } else if (direction === DIRECTION_ENUM.LEFT) {
         if (playerNextY > column - 1) {
@@ -564,6 +577,7 @@ export class PlayerManager extends EntityManager {
         const weaponNextY = y + 1
         const nextPlayerTile = tileInfo[x]?.[playerNextY]
         const nextWeaponTile = tileInfo[weaponNextX]?.[weaponNextY]
+
         //判断门
         if (
           ((doorX === x && doorY === playerNextY) || (doorX === weaponNextX && doorY === weaponNextY)) &&
@@ -600,7 +614,9 @@ export class PlayerManager extends EntityManager {
           return true
         }
       }
-    } else if (inputDirection === CONTROLLER_ENUM.LEFT) {
+
+      //按钮方向——向左
+    } else if (type === CONTROLLER_ENUM.LEFT) {
       const playerNextX = x - 1
 
       //玩家方向——向上
@@ -803,7 +819,7 @@ export class PlayerManager extends EntityManager {
       }
 
       //按钮方向——向右
-    } else if (inputDirection === CONTROLLER_ENUM.RIGHT) {
+    } else if (type === CONTROLLER_ENUM.RIGHT) {
       const playerNextX = x + 1
 
       //玩家方向——向上
@@ -1000,63 +1016,84 @@ export class PlayerManager extends EntityManager {
           return true
         }
       }
+
       //按钮方向——左转
-    } else if (inputDirection === CONTROLLER_ENUM.TURNLEFT) {
-      let nextX
-      let nextY
+    } else if (type === CONTROLLER_ENUM.TURNLEFT) {
+      let nextY, nextX
       if (direction === DIRECTION_ENUM.TOP) {
-        nextX = x-1
-        nextY = y-1
+        //朝上左转的话，左上角三个tile都必须turnable为true，并且没有敌人
+        nextY = y - 1
+        nextX = x - 1
       } else if (direction === DIRECTION_ENUM.BOTTOM) {
-        nextX = x+1
-        nextY = y+1
+        nextY = y + 1
+        nextX = x + 1
       } else if (direction === DIRECTION_ENUM.LEFT) {
-        nextX = x-1
-        nextY = y+1
+        nextY = y + 1
+        nextX = x - 1
       } else if (direction === DIRECTION_ENUM.RIGHT) {
-        nextX = x+1
-        nextY = y-1
+        nextY = y - 1
+        nextX = x + 1
       }
 
-      // 判断门的碰撞
-      if (((x===doorX&&nextY===doorY)||(nextX===doorX&&y===doorY)||(nextX===doorX&&nextY===doorY))
-        &&doorState!==ENTITY_STATE_ENUM.DEATH) {
+      //判断门
+      if (
+        ((doorX === x && doorY === nextY) ||
+          (doorX === nextX && doorY === y) ||
+          (doorX === nextX && doorY === nextY)) &&
+        doorState !== ENTITY_STATE_ENUM.DEATH
+      ) {
         this.state = ENTITY_STATE_ENUM.BLOCKTURNLEFT
         return true
       }
 
-      // 判断敌人的碰撞
+      //判断敌人
       for (let i = 0; i < enemies.length; i++) {
-        const {x:enemyX,y:enemyY} = enemies[i];
+        const enemy = enemies[i]
+        const { x: enemyX, y: enemyY } = enemy
 
-        if ((x===enemyX&&nextY===enemyY)||(nextX===enemyX&&y===enemyY)||(nextX===enemyX&&nextY===enemyY)) {
-          this.state=ENTITY_STATE_ENUM.BLOCKTURNLEFT
+        if (enemyX === nextX && enemyY === y) {
+          this.state = ENTITY_STATE_ENUM.BLOCKTURNLEFT
+
+          return true
+        } else if (enemyX === nextX && enemyY === nextY) {
+          this.state = ENTITY_STATE_ENUM.BLOCKTURNLEFT
+
+          return true
+        } else if (enemyX === x && enemyY === nextY) {
+          this.state = ENTITY_STATE_ENUM.BLOCKTURNLEFT
+
           return true
         }
       }
 
-      // 判断地图的碰撞
-      if ((!tileInfo[x][nextY]|| tileInfo[x][nextY].turnable) && (!tileInfo[nextX][y] || tileInfo[nextX][y].turnable) && (!tileInfo[nextX][nextY] || tileInfo[nextX][nextY].turnable)) {
+      //最后判断地图元素
+      if (
+        (!tileInfo[x]?.[nextY] || tileInfo[x]?.[nextY].turnable) &&
+        (!tileInfo[nextX]?.[y] || tileInfo[nextX]?.[y].turnable) &&
+        (!tileInfo[nextX]?.[nextY] || tileInfo[nextX]?.[nextY].turnable)
+      ) {
         // empty
       } else {
         this.state = ENTITY_STATE_ENUM.BLOCKTURNLEFT
         return true
       }
-    } else if (inputDirection === CONTROLLER_ENUM.TURNRIGHT) {
-      let nextX
-      let nextY
+
+      //按钮方向——右转
+    } else if (type === CONTROLLER_ENUM.TURNRIGHT) {
+      let nextX, nextY
       if (direction === DIRECTION_ENUM.TOP) {
-        nextX = x+1
-        nextY = y-1
+        //朝上右转的话，右上角三个tile都必须turnable为true
+        nextY = y - 1
+        nextX = x + 1
       } else if (direction === DIRECTION_ENUM.BOTTOM) {
-        nextX = x-1
-        nextY = y+1
+        nextY = y + 1
+        nextX = x - 1
       } else if (direction === DIRECTION_ENUM.LEFT) {
-        nextX = x-1
-        nextY = y-1
+        nextY = y - 1
+        nextX = x - 1
       } else if (direction === DIRECTION_ENUM.RIGHT) {
-        nextX = x+1
-        nextY = y+1
+        nextY = y + 1
+        nextX = x + 1
       }
 
       //判断门
@@ -1090,16 +1127,20 @@ export class PlayerManager extends EntityManager {
         }
       }
 
-      // 判断地图
-      if ((!tileInfo[x][nextY]|| tileInfo[x][nextY].turnable) && (!tileInfo[nextX][y] || tileInfo[nextX][y].turnable) && (!tileInfo[nextX][nextY] || tileInfo[nextX][nextY].turnable)) {
+      //最后判断地图元素
+      if (
+        (!tileInfo[x]?.[nextY] || tileInfo[x]?.[nextY].turnable) &&
+        (!tileInfo[nextX]?.[y] || tileInfo[nextX]?.[y].turnable) &&
+        (!tileInfo[nextX]?.[nextY] || tileInfo[nextX]?.[nextY].turnable)
+      ) {
         // empty
       } else {
         this.state = ENTITY_STATE_ENUM.BLOCKTURNRIGHT
         return true
       }
     }
-    return false
 
+    return false
   }
 
   update(dt:number){

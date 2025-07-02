@@ -23,7 +23,7 @@ export class BattleManager extends Component {
     level:ILevel
     stage:Node
     private smokeLayer:Node
-    private inited = false
+    private hasInited = false
 
     protected onLoad(): void {
         DataManager.Instance.levelIndex = 1
@@ -53,8 +53,8 @@ export class BattleManager extends Component {
     }
 
     adaptPos(){
-        const {mapRowCount, mapColumCount} = DataManager.Instance
-        const disX = TILE_WIDTH * mapColumCount/2
+        const {mapRowCount, mapColumnCount} = DataManager.Instance
+        const disX = TILE_WIDTH * mapColumnCount/2
         const disY = TILE_HEIGHT * mapRowCount/2
         this.stage.getComponent(ShakeManager).stop()
         this.stage.setPosition(-disX,disY + 80)
@@ -68,33 +68,32 @@ export class BattleManager extends Component {
     async initLevel(){
         const level = levels[`level${DataManager.Instance.levelIndex}`]
         if (level) {
-            if (this.inited) {
+            if (this.hasInited) {
                 await FaderManager.Instance.fadeIn()
             } else {
                 await FaderManager.Instance.mask()
             }
 
-
             this.clearLevel()
             this.level = level
 
-            DataManager.Instance.mapInfo = level.mapInfo
-            DataManager.Instance.mapRowCount = level.mapInfo.length
-            DataManager.Instance.mapColumCount = level.mapInfo[0].length
-
+            // 地图信息
+            DataManager.Instance.mapInfo = this.level.mapInfo
+            DataManager.Instance.mapRowCount = this.level.mapInfo.length || 0
+            DataManager.Instance.mapColumnCount = this.level.mapInfo[0]?.length || 0
             await Promise.all([
                 this.generateTileMap(),
-                this.generateDoor(),
-                this.generateBurst(),
+                this.generateBursts(),
                 this.generateSpikes(),
                 this.generateSmokeLayer(),
+                this.generateDoor(),
                 this.generateEnemies(),
-                this.generatePlayer(),
             ])
-
+            await this.generatePlayer()
             await FaderManager.Instance.fadeOut()
-            this.inited = true
+            this.hasInited = true
         } else {
+            this.node.destroy()
             EventManager.Instance.emit(EVENT_ENUM.OUT_BATTLE)
         }
     }
@@ -126,7 +125,7 @@ export class BattleManager extends Component {
         EventManager.Instance.emit(EVENT_ENUM.PLAYER_BORN,true)
     }
 
-    async generateBurst(){
+    async generateBursts(){
         const promise = []
         for (let i = 0; i < this.level.bursts.length; i++) {
             const burst = this.level.bursts[i];
@@ -156,17 +155,17 @@ export class BattleManager extends Component {
         DataManager.Instance.enemies = []
         const promises = []
         for (let i = 0; i < this.level.enemies.length; i++) {
-        const enemy = this.level.enemies[i]
-        const node = createUINode()
-        node.setParent(this.stage)
-        let manager: EnemyManager;
-        if (enemy.type === ENTITY_TYPE_ENUM.SKELETON_WOODEN) {
-            manager = node.addComponent(WoodenSkeletonManager);
-        } else {
-            manager = node.addComponent(IronSkeletonManager);
-        }
-        promises.push(manager.init(enemy))
-        DataManager.Instance.enemies.push(manager)
+            const enemy = this.level.enemies[i]
+            const node = createUINode()
+            node.setParent(this.stage)
+            let manager: EnemyManager = null;
+            if (enemy.type === ENTITY_TYPE_ENUM.SKELETON_WOODEN) {
+                manager = node.addComponent(WoodenSkeletonManager);
+            } else {
+                manager = node.addComponent(IronSkeletonManager);
+            }
+            promises.push(manager.init(enemy))
+            DataManager.Instance.enemies.push(manager)
         }
 
         await Promise.all(promises)
@@ -218,7 +217,6 @@ export class BattleManager extends Component {
         const {x:doorX, y:doorY, state:doorState} = DataManager.Instance.door
         if (playerX === doorX && playerY === doorY && doorState === ENTITY_STATE_ENUM.DEATH) {
             EventManager.Instance.emit(EVENT_ENUM.NEXT_LEVEL)
-
         }
     }
 

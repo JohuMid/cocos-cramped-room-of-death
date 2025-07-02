@@ -34,32 +34,35 @@ export abstract class StateMachine extends Component {
   animationComponent:Animation
   waitingList:Array<Promise<SpriteFrame[]>> = []
 
-  getParams(name:string){
-    if (this.params.get(name)) {
-      return this.params.get(name).value
+  getParams(paramName: string) {
+    if (this.params.has(paramName)) {
+      return this.params.get(paramName).value
     }
   }
 
-  setParams(name:string,value:ParamsValueType){
-    if(this.params.has(name)){
-      this.params.get(name).value = value
+  setParams(paramName: string, value: ParamsValueType) {
+    if (this.params.has(paramName)) {
+      this.params.get(paramName).value = value
       this.run()
+      this.resetTrigger()
     }
   }
 
-  get currentState(){
+  get currentState() {
     return this._currentState
   }
 
-  set currentState(value){
-    this._currentState = value
-    this.currentState.run()
-    this.resetTrigger()
+  set currentState(newState) {
+    if (!newState) {
+      return
+    }
+    this._currentState = newState
+    this._currentState.run()
   }
 
   // 重置触发状态
-  resetTrigger(){
-    for (const [_,value] of this.params) {
+  resetTrigger() {
+    for (const [, value] of this.params) {
       if (value.type === FSM_PARAMS_TYPE_ENUM.TRIGGER) {
         value.value = false
       }

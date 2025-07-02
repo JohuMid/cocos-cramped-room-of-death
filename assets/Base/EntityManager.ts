@@ -26,7 +26,9 @@ export class EntityManager extends Component {
 
   set direction(newDirection:DIRECTION_ENUM){
     this._direction = newDirection
-    this.fsm.setParams(PARAMS_NAME_ENUM.DIRECTION, DIRECTION_ORDER_ENUM[this._direction])
+    if (this.fsm) {
+      this.fsm.setParams(PARAMS_NAME_ENUM.DIRECTION, DIRECTION_ORDER_ENUM[this._direction])
+    }
   }
 
   get state(){
@@ -35,7 +37,9 @@ export class EntityManager extends Component {
 
   set state(value:ENTITY_STATE_ENUM){
     this._state = value
-    this.fsm.setParams(this._state,true)
+    if (this.fsm) {
+      this.fsm.setParams(this._state,true)
+    }
   }
 
   async init(params:IEntity) {

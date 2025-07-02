@@ -25,14 +25,14 @@ export class DrawManager extends Component {
     this.ctx = this.addComponent(Graphics)
     const transForm = this.getComponent(UITransform)
     transForm.setAnchorPoint(0.5,0.5)
-    transForm.setContentSize(SCREEN_WIDTH,SCREEN_HEIGHT)
+    transForm.setContentSize(SCREEN_WIDTH *2,SCREEN_HEIGHT*2)
 
     this.setAlpha(1)
   }
 
   setAlpha(percent:number){
     this.ctx.clear()
-    this.ctx.rect(0,0,SCREEN_WIDTH,SCREEN_HEIGHT)
+    this.ctx.rect(0,0,SCREEN_WIDTH *2,SCREEN_HEIGHT*2)
     this.ctx.fillColor = new Color(0,0,0,255*percent)
     this.ctx.fill()
     this.block.enabled = percent === 1
